@@ -16,7 +16,7 @@ import {
   message,
   vote,
 } from './schema';
-import { BlockKind } from '@/components/block';
+import { ArtifactKind } from '@/components/artifact';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -35,12 +35,13 @@ export async function getUser(email: string): Promise<Array<User>> {
   }
 }
 
-export async function createUser(email: string, password: string) {
-  const salt = genSaltSync(10);
-  const hash = hashSync(password, salt);
-
+export async function createUser({ id, email }: { id: string; email: string }) {
   try {
-    return await db.insert(user).values({ email, password: hash });
+    return await db.insert(user).values({
+      id,
+      email,
+      createdAt: new Date(),
+    });
   } catch (error) {
     console.error('Failed to create user in database');
     throw error;
@@ -57,6 +58,7 @@ export async function saveChat({
   title: string;
 }) {
   try {
+    console.log('Saving chat in database', id, userId, title);
     return await db.insert(chat).values({
       id,
       createdAt: new Date(),
@@ -64,7 +66,7 @@ export async function saveChat({
       title,
     });
   } catch (error) {
-    console.error('Failed to save chat in database');
+    console.error('Failed to save chat in database', error);
     throw error;
   }
 }
@@ -176,7 +178,7 @@ export async function saveDocument({
 }: {
   id: string;
   title: string;
-  kind: BlockKind;
+  kind: ArtifactKind;
   content: string;
   userId: string;
 }) {
